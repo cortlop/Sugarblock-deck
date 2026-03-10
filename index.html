@@ -702,7 +702,7 @@ html {
       <div class="label">Dominado por correspondent banking</div>
     </div>
   </div>
-  <p class="footnote slide-reveal" data-reveal-section="problema">Lento, caro y opaco. El mid-market de LatAm no tiene alternativas reales.</p>
+  <p class="footnote slide-reveal" data-reveal-section="problema">Lento, caro y opaco. El mid-market de LATAM no tiene alternativas reales.</p>
   <div class="sources slide-reveal" data-reveal-section="problema">FSB/G20 Roadmap "Consolidated progress report for 2025" · IMF Working Paper WP/24/119 "Cross-Border Payments Integration in Latin America and the Caribbean"</div>
 </section>
 
@@ -760,7 +760,11 @@ html {
         <p class="subtitle" style="font-size: 15px; margin-top: 8px;">Tu proveedor recibe en minutos</p>
       </div>
     </div>
-    <p class="footnote" style="text-align: center; margin: 32px auto 0;">Resultado: pagas hasta 70% menos que con bancos.</p>
+    <div style="text-align: center; margin: 40px auto 0;">
+      <div style="display: inline-block; background: var(--accent); color: white; border-radius: 100px; padding: 16px 36px; font-size: clamp(16px, 2vw, 20px); font-weight: 600; box-shadow: 0 8px 32px rgba(108,60,224,0.3);">
+        Resultado: pagas hasta <span style="font-size: 1.3em; font-weight: 800;">70%</span> menos que con bancos.
+      </div>
+    </div>
   </div>
 </section>
 
@@ -843,7 +847,7 @@ html {
     </div>
     <div class="stat">
       <div class="number countup" data-target="2.87" data-prefix="$" data-suffix="T" data-decimals="2" data-delay="300">$0.00T</div>
-      <div class="label">Volumen en LatAm — 583,000 empresas · 0% penetración</div>
+      <div class="label">Volumen en LATAM — 583,000 empresas · 0% penetración</div>
     </div>
   </div>
   <p class="footnote">*Empresas de $1M–$4.4M USD de venta anuales. El mid-market hoy no tiene alternativas viables a los bancos.</p>
@@ -872,7 +876,7 @@ html {
       <span><div class="dot" style="background:transparent; border: 2px dashed #a78bfa;"></div> Roadmap futuro</span>
     </div>
   </div>
-  <p class="footnote" style="text-align: center; margin: 16px auto 0;">La infraestructura financiera de LatAm, construida sobre stablecoins.</p>
+  <p class="footnote" style="text-align: center; margin: 16px auto 0;">La infraestructura financiera de LATAM, construida sobre stablecoins.</p>
 </section>
 
 <!-- SLIDE 10: Equipo -->
@@ -1446,36 +1450,9 @@ function animateCountUp(numberEl) {
   );
   globe.add(sphereWire);
 
-  // Solid inner sphere for subtle depth
-  var innerSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.99, 48, 48),
-    new THREE.MeshBasicMaterial({ color: 0xf5f0ff, transparent: true, opacity: 0.35 })
-  );
-  globe.add(innerSphere);
+  // No inner sphere — fully transparent globe
 
-  // Atmosphere glow — outer shell
-  var atmosGeo = new THREE.SphereGeometry(1.12, 32, 32);
-  var atmosMat = new THREE.ShaderMaterial({
-    vertexShader: [
-      'varying vec3 vNormal;',
-      'void main() {',
-      '  vNormal = normalize(normalMatrix * normal);',
-      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-      '}'
-    ].join('\n'),
-    fragmentShader: [
-      'varying vec3 vNormal;',
-      'void main() {',
-      '  float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);',
-      '  gl_FragColor = vec4(0.424, 0.235, 0.878, 1.0) * intensity * 0.6;',
-      '}'
-    ].join('\n'),
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true
-  });
-  var atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
-  globe.add(atmosphere);
+  // No atmosphere — clean transparent globe
 
   // Lat/Long to 3D
   function ll2v(lat, lon, r) {
@@ -1512,10 +1489,14 @@ function animateCountUp(numberEl) {
     var start = ll2v(origin.lat, origin.lon, 1);
     var end = ll2v(dest.lat, dest.lon, 1);
 
-    // Midpoint elevated above globe
+    // Midpoint elevated above globe (capped for long arcs)
     var mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     var dist = start.distanceTo(end);
-    mid.normalize().multiplyScalar(1 + dist * 0.5);
+    // Prevent near-zero midpoint for antipodal points
+    if (mid.length() < 0.01) {
+      mid.set(0, 1, 0);
+    }
+    mid.normalize().multiplyScalar(1 + Math.min(dist * 0.35, 0.55));
 
     var curve = new THREE.QuadraticBezierCurve3(start, mid, end);
     curves.push(curve);
@@ -1538,21 +1519,29 @@ function animateCountUp(numberEl) {
     arcGroup.add(new THREE.Line(geo, lineMat));
   });
 
-  // Origin dot (Santiago)
-  var dotGeo = new THREE.SphereGeometry(0.02, 8, 8);
-  var dotMat = new THREE.MeshBasicMaterial({ color: 0x6c3ce0 });
-  var originDot = new THREE.Mesh(dotGeo, dotMat);
-  var oPos = ll2v(origin.lat, origin.lon, 1.01);
-  originDot.position.copy(oPos);
+  // Origin dot (Santiago) — larger, with glow
+  var originDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x6c3ce0 })
+  );
+  originDot.position.copy(ll2v(origin.lat, origin.lon, 1.015));
   globe.add(originDot);
 
-  // Destination dots
+  // Origin glow ring
+  var glowRing = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x6c3ce0, transparent: true, opacity: 0.25 })
+  );
+  glowRing.position.copy(originDot.position);
+  globe.add(glowRing);
+
+  // Destination dots — slightly larger
   corridors.forEach(function(dest) {
     var dot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.015, 8, 8),
+      new THREE.SphereGeometry(0.022, 10, 10),
       new THREE.MeshBasicMaterial({ color: 0xb394f4 })
     );
-    dot.position.copy(ll2v(dest.lat, dest.lon, 1.01));
+    dot.position.copy(ll2v(dest.lat, dest.lon, 1.015));
     globe.add(dot);
   });
 
