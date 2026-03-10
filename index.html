@@ -517,6 +517,27 @@ html {
 }
 
 /* Reduced motion respect */
+/* ===== 3D GLOBE — HERO SLIDE ===== */
+#hero { position: relative; overflow: hidden; }
+#hero .hero-content { position: relative; z-index: 2; text-align: left; max-width: 560px; }
+#hero .hero-content .subtitle { text-align: left; }
+#globeCanvas {
+  position: absolute; top: 50%; right: -5%;
+  transform: translateY(-50%);
+  width: 65%; height: 100%;
+  z-index: 1; pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  #hero .hero-content { text-align: center; max-width: 100%; }
+  #hero .hero-content .subtitle { text-align: center; }
+  #globeCanvas {
+    width: 100%; right: 0; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.2;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -525,6 +546,7 @@ html {
     scroll-behavior: auto !important;
   }
   html { scroll-snap-type: none; }
+  #globeCanvas { display: none; }
 }
 </style>
 </head>
@@ -653,10 +675,13 @@ html {
 </nav>
 
 <!-- SLIDE 1: Cover -->
-<section class="slide" style="text-align: center; align-items: center;">
-  <div class="eyebrow">Sugarblock</div>
-  <h1>La cuenta global<br>para el mid-market<br>de LATAM.</h1>
-  <p class="subtitle" style="text-align: center;">Impulsada por stablecoins. Pagos internacionales B2B sin fricción bancaria.</p>
+<section class="slide" id="hero">
+  <canvas id="globeCanvas"></canvas>
+  <div class="hero-content">
+    <div class="eyebrow">Sugarblock</div>
+    <h1>La cuenta global<br>para el mid-market<br>de LATAM.</h1>
+    <p class="subtitle">Impulsada por stablecoins. Pagos internacionales B2B sin fricción bancaria.</p>
+  </div>
 </section>
 
 <!-- SLIDE 2: El problema -->
@@ -925,6 +950,7 @@ html {
   " target="_blank">sugarblock.io</a>
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -1371,6 +1397,378 @@ function animateCountUp(numberEl) {
     problemaObserver.observe(problemaSection);
   }
 
+})();
+</script>
+<script>
+// ===== 3D GLOBE — HERO ANIMATION =====
+(function() {
+  if (typeof THREE === 'undefined') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // WebGL detection
+  try {
+    var c = document.createElement('canvas');
+    if (!(c.getContext('webgl') || c.getContext('experimental-webgl'))) return;
+  } catch(e) { return; }
+
+  var canvas = document.getElementById('globeCanvas');
+  if (!canvas) return;
+
+  // Scene setup
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 0.3, 2.8);
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  function resize() {
+    var rect = canvas.parentElement.getBoundingClientRect();
+    var w = canvas.clientWidth || rect.width * 0.65;
+    var h = canvas.clientHeight || rect.height;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Globe group
+  var globe = new THREE.Group();
+  scene.add(globe);
+
+  // Main sphere — semi-transparent wireframe
+  var sphereGeo = new THREE.SphereGeometry(1, 48, 48);
+  var sphereWire = new THREE.LineSegments(
+    new THREE.WireframeGeometry(sphereGeo),
+    new THREE.LineBasicMaterial({ color: 0x6c3ce0, transparent: true, opacity: 0.07 })
+  );
+  globe.add(sphereWire);
+
+  // Solid inner sphere for subtle depth
+  var innerSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.99, 48, 48),
+    new THREE.MeshBasicMaterial({ color: 0xf5f0ff, transparent: true, opacity: 0.35 })
+  );
+  globe.add(innerSphere);
+
+  // Atmosphere glow — outer shell
+  var atmosGeo = new THREE.SphereGeometry(1.12, 32, 32);
+  var atmosMat = new THREE.ShaderMaterial({
+    vertexShader: [
+      'varying vec3 vNormal;',
+      'void main() {',
+      '  vNormal = normalize(normalMatrix * normal);',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'varying vec3 vNormal;',
+      'void main() {',
+      '  float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);',
+      '  gl_FragColor = vec4(0.424, 0.235, 0.878, 1.0) * intensity * 0.6;',
+      '}'
+    ].join('\n'),
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true
+  });
+  var atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
+  globe.add(atmosphere);
+
+  // Lat/Long to 3D
+  function ll2v(lat, lon, r) {
+    var phi = (90 - lat) * Math.PI / 180;
+    var theta = (lon + 180) * Math.PI / 180;
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
+  // Corridor data — Santiago as origin
+  var origin = { lat: -33.45, lon: -70.67 };
+  var corridors = [
+    { lat: 40.71, lon: -74.01, name: 'USA' },
+    { lat: 19.43, lon: -99.13, name: 'Mexico' },
+    { lat: -23.55, lon: -46.63, name: 'Brazil' },
+    { lat: 4.71, lon: -74.07, name: 'Colombia' },
+    { lat: 19.08, lon: 72.88, name: 'India' },
+    { lat: 31.23, lon: 121.47, name: 'China' },
+    { lat: 51.51, lon: -0.13, name: 'London' },
+    { lat: 1.35, lon: 103.82, name: 'Singapore' },
+    { lat: -34.60, lon: -58.38, name: 'Argentina' },
+    { lat: -12.05, lon: -77.04, name: 'Peru' }
+  ];
+
+  // Create arcs
+  var arcGroup = new THREE.Group();
+  globe.add(arcGroup);
+  var curves = [];
+
+  corridors.forEach(function(dest) {
+    var start = ll2v(origin.lat, origin.lon, 1);
+    var end = ll2v(dest.lat, dest.lon, 1);
+
+    // Midpoint elevated above globe
+    var mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    var dist = start.distanceTo(end);
+    mid.normalize().multiplyScalar(1 + dist * 0.5);
+
+    var curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+    curves.push(curve);
+
+    var pts = curve.getPoints(48);
+    var geo = new THREE.BufferGeometry().setFromPoints(pts);
+
+    // Gradient opacity — brighter at start/end, softer in middle
+    var colors = [];
+    for (var i = 0; i < pts.length; i++) {
+      var t = i / (pts.length - 1);
+      var alpha = 0.3 + 0.4 * Math.pow(Math.sin(t * Math.PI), 0.5);
+      colors.push(0.424 * alpha, 0.235 * alpha, 0.878 * alpha);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+    var lineMat = new THREE.LineBasicMaterial({
+      vertexColors: true, transparent: true, opacity: 0.7
+    });
+    arcGroup.add(new THREE.Line(geo, lineMat));
+  });
+
+  // Origin dot (Santiago)
+  var dotGeo = new THREE.SphereGeometry(0.02, 8, 8);
+  var dotMat = new THREE.MeshBasicMaterial({ color: 0x6c3ce0 });
+  var originDot = new THREE.Mesh(dotGeo, dotMat);
+  var oPos = ll2v(origin.lat, origin.lon, 1.01);
+  originDot.position.copy(oPos);
+  globe.add(originDot);
+
+  // Destination dots
+  corridors.forEach(function(dest) {
+    var dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.015, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xb394f4 })
+    );
+    dot.position.copy(ll2v(dest.lat, dest.lon, 1.01));
+    globe.add(dot);
+  });
+
+  // ===== REAL WORLD COASTLINES — Inline TopoJSON Decoder =====
+  // No external library needed. Fetches Natural Earth 110m data and decodes inline.
+
+  var coastMat = new THREE.LineBasicMaterial({ color: 0x6c3ce0, transparent: true, opacity: 0.4 });
+  var borderMat = new THREE.LineBasicMaterial({ color: 0x6c3ce0, transparent: true, opacity: 0.15 });
+
+  // Minimal TopoJSON decoder — replaces topojson-client library
+  function decodeTopoArcs(topo) {
+    var tf = topo.transform;
+    var s = tf.scale, t = tf.translate;
+    return topo.arcs.map(function(arc) {
+      var x = 0, y = 0;
+      return arc.map(function(d) {
+        x += d[0]; y += d[1];
+        return [x * s[0] + t[0], y * s[1] + t[1]];
+      });
+    });
+  }
+
+  function resolveRing(indices, arcs) {
+    var coords = [];
+    indices.forEach(function(i) {
+      var arc = i >= 0 ? arcs[i] : arcs[~i].slice().reverse();
+      arc.forEach(function(pt, j) {
+        if (j > 0 || coords.length === 0) coords.push(pt);
+      });
+    });
+    return coords;
+  }
+
+  function extractRings(geom, arcs) {
+    var rings = [];
+    if (geom.type === 'GeometryCollection') {
+      geom.geometries.forEach(function(g) {
+        rings = rings.concat(extractRings(g, arcs));
+      });
+    } else if (geom.type === 'Polygon') {
+      geom.arcs.forEach(function(r) { rings.push(resolveRing(r, arcs)); });
+    } else if (geom.type === 'MultiPolygon') {
+      geom.arcs.forEach(function(p) {
+        p.forEach(function(r) { rings.push(resolveRing(r, arcs)); });
+      });
+    }
+    return rings;
+  }
+
+  function renderRings(rings, material, radius) {
+    rings.forEach(function(ring) {
+      var pts = ring.map(function(c) { return ll2v(c[1], c[0], radius); });
+      if (pts.length > 1) {
+        globe.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), material));
+      }
+    });
+  }
+
+  function extractBorderArcs(topo, decodedArcs) {
+    var usage = {};
+    topo.objects.countries.geometries.forEach(function(geom, gIdx) {
+      function track(arcsArr) {
+        arcsArr.forEach(function(ring) {
+          ring.forEach(function(i) {
+            var key = i >= 0 ? i : ~i;
+            if (!usage[key]) usage[key] = new Set();
+            usage[key].add(gIdx);
+          });
+        });
+      }
+      if (geom.type === 'Polygon') track(geom.arcs);
+      else if (geom.type === 'MultiPolygon') geom.arcs.forEach(track);
+    });
+    var borderRings = [];
+    Object.keys(usage).forEach(function(key) {
+      if (usage[key].size > 1) {
+        borderRings.push(decodedArcs[parseInt(key)]);
+      }
+    });
+    return borderRings;
+  }
+
+  // Fetch with fallback CDNs + error logging
+  var geoUrls = [
+    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',
+    'https://unpkg.com/world-atlas@2.0.2/countries-110m.json'
+  ];
+
+  function fetchGeo(urlIdx) {
+    if (urlIdx >= geoUrls.length) {
+      console.warn('[Globe] All CDN sources failed. Countries will not render.');
+      return;
+    }
+    console.log('[Globe] Fetching geo data from:', geoUrls[urlIdx]);
+    fetch(geoUrls[urlIdx])
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.json();
+      })
+      .then(function(topo) {
+        console.log('[Globe] Geo data loaded. Decoding...');
+        var decodedArcs = decodeTopoArcs(topo);
+
+        // Coastlines (land outlines)
+        var landRings = extractRings(topo.objects.land, decodedArcs);
+        console.log('[Globe] Rendering', landRings.length, 'coastline segments');
+        renderRings(landRings, coastMat, 1.003);
+
+        // Internal country borders
+        var borderRings = extractBorderArcs(topo, decodedArcs);
+        console.log('[Globe] Rendering', borderRings.length, 'border segments');
+        renderRings(borderRings, borderMat, 1.004);
+      })
+      .catch(function(err) {
+        console.warn('[Globe] Fetch failed from', geoUrls[urlIdx], ':', err.message);
+        fetchGeo(urlIdx + 1);
+      });
+  }
+
+  fetchGeo(0);
+
+  // Particle system — flowing along arcs
+  var PARTICLES_PER_ARC = 3;
+  var totalParticles = curves.length * PARTICLES_PER_ARC;
+  var particlePositions = new Float32Array(totalParticles * 3);
+  var particleSizes = new Float32Array(totalParticles);
+  var particleTs = [];
+
+  for (var i = 0; i < curves.length; i++) {
+    for (var j = 0; j < PARTICLES_PER_ARC; j++) {
+      particleTs.push({ curve: i, t: j / PARTICLES_PER_ARC, speed: 0.002 + Math.random() * 0.002 });
+      particleSizes[i * PARTICLES_PER_ARC + j] = 3.0;
+    }
+  }
+
+  var particleGeo = new THREE.BufferGeometry();
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+  particleGeo.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+
+  // Glow texture
+  var glowCanvas = document.createElement('canvas');
+  glowCanvas.width = 32; glowCanvas.height = 32;
+  var gCtx = glowCanvas.getContext('2d');
+  var grad = gCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  grad.addColorStop(0, 'rgba(108,60,224,1)');
+  grad.addColorStop(0.3, 'rgba(108,60,224,0.6)');
+  grad.addColorStop(1, 'rgba(108,60,224,0)');
+  gCtx.fillStyle = grad;
+  gCtx.fillRect(0, 0, 32, 32);
+  var glowTexture = new THREE.CanvasTexture(glowCanvas);
+
+  var particleMat = new THREE.PointsMaterial({
+    size: 0.04, map: glowTexture,
+    transparent: true, blending: THREE.AdditiveBlending,
+    depthWrite: false, color: 0x6c3ce0
+  });
+  var particles = new THREE.Points(particleGeo, particleMat);
+  globe.add(particles);
+
+  // Initial rotation — LATAM facing viewer
+  globe.rotation.y = -1.0;
+  globe.rotation.x = 0.2;
+
+  // Animation
+  var isVisible = true;
+  var animId;
+
+  function animate() {
+    if (!isVisible) return;
+    animId = requestAnimationFrame(animate);
+
+    // Slow auto-rotation
+    globe.rotation.y += 0.0008;
+
+    // Update particles
+    var pos = particles.geometry.attributes.position.array;
+    for (var i = 0; i < particleTs.length; i++) {
+      var p = particleTs[i];
+      p.t += p.speed;
+      if (p.t > 1) p.t -= 1;
+      var pt = curves[p.curve].getPoint(p.t);
+      pos[i * 3] = pt.x;
+      pos[i * 3 + 1] = pt.y;
+      pos[i * 3 + 2] = pt.z;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  }
+
+  // Start after a small delay (let splash screen render first)
+  setTimeout(function() { animate(); }, 200);
+
+  // GSAP ScrollTrigger — fade out and zoom on scroll
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    ScrollTrigger.create({
+      trigger: '#hero',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 0.3,
+      onUpdate: function(self) {
+        var p = self.progress;
+        canvas.style.opacity = 1 - p * 1.2;
+        camera.position.z = 2.8 - p * 0.6;
+        camera.updateProjectionMatrix();
+      },
+      onLeave: function() {
+        isVisible = false;
+        cancelAnimationFrame(animId);
+      },
+      onEnterBack: function() {
+        isVisible = true;
+        animate();
+      }
+    });
+  }
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
