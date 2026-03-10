@@ -442,6 +442,90 @@
   }
 
   .cta-button:hover { transform: scale(1.05); box-shadow: 0 8px 32px rgba(255,255,255,0.3) !important; }
+
+/* ===== ANTIGRAVITY DESIGN SYSTEM ===== */
+
+/* Floating shadow system — weightless feel */
+.card, .corridor, .gantt-bar, .platform-arm, .platform-benefit {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 12px 24px rgba(0,0,0,0.04);
+  transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.card:hover, .corridor:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06), 0 24px 48px rgba(0,0,0,0.08);
+}
+
+/* Glassmorphism cards for solution slide */
+.slide#solucion .card {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* Subtle parallax depth layers */
+.slide .eyebrow { will-change: transform; }
+.slide h1, .slide h2 { will-change: transform; }
+
+/* Step numbers - floating glow */
+.step-number {
+  box-shadow: 0 8px 24px rgba(108,60,224,0.3);
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.step:hover .step-number {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(108,60,224,0.4);
+}
+
+/* Stat numbers — glow on dark slides */
+.slide-dark .stat .number {
+  text-shadow: 0 0 40px rgba(108,60,224,0.3);
+}
+
+/* Gantt bars enhanced depth */
+.gantt-bar {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.gantt-bar:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+/* Corridor cards — subtle glass effect on light slide */
+.corridor {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth scroll snapping */
+html {
+  scroll-snap-type: y proximity;
+}
+.slide {
+  scroll-snap-align: start;
+}
+
+/* CTA button glow */
+.cta-button, .cta-url {
+  box-shadow: 0 8px 32px rgba(108,60,224,0.4);
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, background 0.3s ease-out;
+}
+.cta-button:hover, .cta-url:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 16px 48px rgba(108,60,224,0.5);
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-snap-type: none; }
+}
 </style>
 </head>
 <body>
@@ -841,13 +925,18 @@
   " target="_blank">sugarblock.io</a>
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+// ===== GSAP + SCROLL TRIGGER SETUP =====
+gsap.registerPlugin(ScrollTrigger);
+
 // Shared chart defaults
 Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
 Chart.defaults.color = '#6e6e73';
 
-// Intersection Observer for animation on scroll
+// Chart observer (kept as-is for lazy loading)
 const chartObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -967,30 +1056,206 @@ function initVolumeChart() {
   });
 }
 
-// Scroll-triggered fade-in animations
-const fadeObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
+// ===== GSAP SCROLL ANIMATIONS =====
+
+// Respect reduced motion
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (!prefersReducedMotion) {
+
+  // --- Slide header reveals (eyebrow + h1/h2 + subtitle) ---
+  document.querySelectorAll('.slide').forEach(slide => {
+    // Skip problema slide (has its own animation)
+    if (slide.id === 'problema') return;
+
+    const eyebrow = slide.querySelector('.eyebrow');
+    const heading = slide.querySelector('h1, h2');
+    const subtitle = slide.querySelector('.subtitle');
+    const footnote = slide.querySelector('.footnote');
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: slide,
+        start: 'top 75%',
+        end: 'top 25%',
+        toggleActions: 'play none none none',
+      }
+    });
+
+    if (eyebrow) {
+      gsap.set(eyebrow, { opacity: 0, y: 20 });
+      tl.to(eyebrow, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' });
+    }
+    if (heading) {
+      gsap.set(heading, { opacity: 0, y: 30 });
+      tl.to(heading, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.3');
+    }
+    if (subtitle) {
+      gsap.set(subtitle, { opacity: 0, y: 20 });
+      tl.to(subtitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3');
+    }
+    if (footnote) {
+      gsap.set(footnote, { opacity: 0, y: 16 });
+      tl.to(footnote, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.1');
     }
   });
-}, { threshold: 0.1 });
 
-document.querySelectorAll('.stat, .card, .corridor, .step, .team-member, .gantt-row').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  fadeObserver.observe(el);
-});
-
-// Stagger animation for grid items
-document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track, .stats:not(.stats-problema), .steps').forEach(container => {
-  const items = container.children;
-  Array.from(items).forEach((item, i) => {
-    item.style.transitionDelay = (i * 0.1) + 's';
+  // --- Staggered card-grid items (solution, etc.) ---
+  document.querySelectorAll('.card-grid').forEach(grid => {
+    const cards = grid.querySelectorAll('.card');
+    gsap.set(cards, { opacity: 0, y: 30, scale: 0.96 });
+    ScrollTrigger.create({
+      trigger: grid,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(cards, {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.6, stagger: 0.1,
+          ease: 'power3.out'
+        });
+      },
+      once: true
+    });
   });
-});
+
+  // --- Staggered corridor grid ---
+  document.querySelectorAll('.corridor-grid').forEach(grid => {
+    const items = grid.querySelectorAll('.corridor');
+    gsap.set(items, { opacity: 0, y: 20, scale: 0.95 });
+    ScrollTrigger.create({
+      trigger: grid,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(items, {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.5, stagger: 0.05,
+          ease: 'power3.out'
+        });
+      },
+      once: true
+    });
+  });
+
+  // --- Steps (How it works) ---
+  document.querySelectorAll('.steps').forEach(stepsContainer => {
+    const steps = stepsContainer.querySelectorAll('.step');
+    const arrows = stepsContainer.querySelectorAll('.step-arrow');
+    gsap.set(steps, { opacity: 0, y: 30 });
+    gsap.set(arrows, { opacity: 0, scale: 0.5 });
+    ScrollTrigger.create({
+      trigger: stepsContainer,
+      start: 'top 80%',
+      onEnter: () => {
+        const allItems = stepsContainer.children;
+        Array.from(allItems).forEach((item, i) => {
+          gsap.to(item, {
+            opacity: 1, y: 0, scale: 1,
+            duration: 0.6,
+            delay: i * 0.15,
+            ease: 'back.out(1.2)'
+          });
+        });
+      },
+      once: true
+    });
+  });
+
+  // --- Gantt bars slide in from left ---
+  document.querySelectorAll('.gantt-track').forEach(track => {
+    const bars = track.querySelectorAll('.gantt-row');
+    gsap.set(bars, { opacity: 0, x: -40 });
+    ScrollTrigger.create({
+      trigger: track,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(bars, {
+          opacity: 1, x: 0,
+          duration: 0.7, stagger: 0.12,
+          ease: 'power3.out'
+        });
+      },
+      once: true
+    });
+  });
+
+  // --- Team grid stagger ---
+  document.querySelectorAll('.team-grid').forEach(grid => {
+    const members = grid.querySelectorAll('.team-member');
+    gsap.set(members, { opacity: 0, y: 24 });
+    ScrollTrigger.create({
+      trigger: grid,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(members, {
+          opacity: 1, y: 0,
+          duration: 0.6, stagger: 0.08,
+          ease: 'power3.out'
+        });
+      },
+      once: true
+    });
+  });
+
+  // --- Stats reveal (non-problema) ---
+  document.querySelectorAll('.stats:not(.stats-problema)').forEach(stats => {
+    const items = stats.querySelectorAll('.stat');
+    gsap.set(items, { opacity: 0, y: 28 });
+    ScrollTrigger.create({
+      trigger: stats,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(items, {
+          opacity: 1, y: 0,
+          duration: 0.7, stagger: 0.15,
+          ease: 'power3.out',
+          onComplete: () => {
+            // Trigger countups after reveal
+            items.forEach(stat => {
+              const num = stat.querySelector('.countup');
+              if (num && !num.dataset.animated) {
+                num.dataset.animated = '1';
+                animateCountUp(num);
+              }
+            });
+          }
+        });
+      },
+      once: true
+    });
+  });
+
+  // --- Parallax on backgrounds ---
+  document.querySelectorAll('.slide-dark, .slide-accent').forEach(slide => {
+    gsap.to(slide, {
+      backgroundPosition: '50% 30%',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: slide,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 0.5
+      }
+    });
+  });
+
+  // --- CTA button entrance ---
+  const ctaButton = document.querySelector('.cta-button, .cta-url');
+  if (ctaButton) {
+    gsap.set(ctaButton, { opacity: 0, scale: 0.85, y: 20 });
+    ScrollTrigger.create({
+      trigger: ctaButton.closest('.slide'),
+      start: 'top 60%',
+      onEnter: () => {
+        gsap.to(ctaButton, {
+          opacity: 1, scale: 1, y: 0,
+          duration: 0.8, ease: 'back.out(1.4)'
+        });
+      },
+      once: true
+    });
+  }
+
+} // end prefers-reduced-motion check
 </script>
 
 
@@ -1034,46 +1299,32 @@ document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track,
   });
 })();
 
-/* ===== COUNT-UP + SEQUENTIAL REVEAL ===== */
+/* ===== COUNT-UP (global for GSAP access) ===== */
+var COUNT_DURATION = 2400; /* ms for the number count-up animation */
+
+function easeOutExpo(t) {
+  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
+
+function animateCountUp(numberEl) {
+  var target = parseFloat(numberEl.dataset.target);
+  var decimals = parseInt(numberEl.dataset.decimals) || 0;
+  var prefix = numberEl.dataset.prefix || '';
+  var suffix = numberEl.dataset.suffix || '';
+  var startTime = null;
+
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var p = Math.min((ts - startTime) / COUNT_DURATION, 1);
+    var v = easeOutExpo(p) * target;
+    numberEl.textContent = prefix + v.toFixed(decimals) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ===== PROBLEMA OBSERVER ===== */
 (function() {
-  var INITIAL_DELAY = 600;   /* ms before first stat appears */
-  var STAGGER = 3500;        /* ms between each stat appearing */
-  var COUNT_DURATION = 2400; /* ms for the number count-up animation */
-
-  function easeOutExpo(t) {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-  }
-
-  function animateCountUp(numberEl) {
-    var target = parseFloat(numberEl.dataset.target);
-    var decimals = parseInt(numberEl.dataset.decimals) || 0;
-    var prefix = numberEl.dataset.prefix || '';
-    var suffix = numberEl.dataset.suffix || '';
-    var startTime = null;
-
-    function step(ts) {
-      if (!startTime) startTime = ts;
-      var p = Math.min((ts - startTime) / COUNT_DURATION, 1);
-      var v = easeOutExpo(p) * target;
-      numberEl.textContent = prefix + v.toFixed(decimals) + suffix;
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  /* Hide every NON-problema .stat and .slide-reveal on load */
-  var revealTransition = 'opacity 1s cubic-bezier(0.25,0.46,0.45,0.94), transform 1s cubic-bezier(0.25,0.46,0.45,0.94)';
-  document.querySelectorAll('.stats:not(.stats-problema) .stat').forEach(function(stat) {
-    stat.style.opacity = '0';
-    stat.style.transform = 'translateY(28px)';
-    stat.style.transition = revealTransition;
-  });
-  document.querySelectorAll('.slide-reveal:not([data-reveal-section="problema"])').forEach(function(el) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(16px)';
-    el.style.transition = revealTransition;
-  });
-
   /* --- PROBLEMA: uses CSS class-based animation (keyframes) --- */
   var problemaSection = document.getElementById('problema');
   var problemaTriggered = false;
@@ -1120,43 +1371,6 @@ document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track,
     problemaObserver.observe(problemaSection);
   }
 
-  /* --- OTHER SLIDES: countUp observer (Tracción, Oportunidad) --- */
-  var countObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (!entry.isIntersecting) return;
-      var statsContainer = entry.target;
-      var stats = statsContainer.querySelectorAll('.stat');
-      var section = statsContainer.closest('section');
-      var reveals = section ? section.querySelectorAll('.slide-reveal') : [];
-
-      stats.forEach(function(stat) {
-        setTimeout(function() {
-          stat.style.opacity = '1';
-          stat.style.transform = 'translateY(0)';
-          var num = stat.querySelector('.countup');
-          if (num && !num.dataset.animated) {
-            num.dataset.animated = '1';
-            animateCountUp(num);
-          }
-        }, INITIAL_DELAY);
-      });
-
-      /* Reveal footnote/sources after countUp finishes */
-      var afterCountUp = INITIAL_DELAY + COUNT_DURATION + 400;
-      reveals.forEach(function(el, i) {
-        setTimeout(function() {
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, afterCountUp + i * 200);
-      });
-
-      countObserver.unobserve(statsContainer);
-    });
-  }, { threshold: 0.3 });
-
-  document.querySelectorAll('.stats:not(.stats-problema)').forEach(function(s) {
-    countObserver.observe(s);
-  });
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
