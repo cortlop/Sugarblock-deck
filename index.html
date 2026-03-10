@@ -9,6 +9,15 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  @keyframes problemaFadeIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .problema-hidden { opacity: 0 !important; transform: translateY(24px); }
+  .problema-animate {
+    animation: problemaFadeIn 0.9s cubic-bezier(0.25,0.46,0.45,0.94) forwards !important;
+  }
+
   :root {
     --black: #1d1d1f;
     --gray: #6e6e73;
@@ -567,24 +576,24 @@
 
 <!-- SLIDE 2: El problema -->
 <section class="slide slide-dark" id="problema">
-  <div class="eyebrow">El problema</div>
-  <h2>El sistema está roto.</h2>
-  <div class="stats">
+  <div class="eyebrow problema-reveal">El problema</div>
+  <h2 class="problema-reveal">El sistema está <span style="color: var(--accent); font-style: italic;">roto</span>.</h2>
+  <div class="stats stats-problema">
     <div class="stat">
-      <div class="number countup" data-target="0.3" data-suffix="%" data-decimals="1" data-delay="0">0.3%</div>
+      <div class="number">0.3%</div>
       <div class="label">Pagos B2B en menos de 1 hora</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="5.7" data-suffix="%" data-decimals="1" data-delay="200">5.7%</div>
+      <div class="number">5.7%</div>
       <div class="label">Costo promedio por envío de $5K USD</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="100" data-suffix="%" data-decimals="0" data-delay="400">100%</div>
+      <div class="number">100%</div>
       <div class="label">Dominado por correspondent banking</div>
     </div>
   </div>
-  <p class="footnote">Lento, caro y opaco. El mid-market de LatAm no tiene alternativas reales.</p>
-  <div class="sources">FSB/G20 Roadmap "Consolidated progress report for 2025" · IMF Working Paper WP/24/119 "Cross-Border Payments Integration in Latin America and the Caribbean"</div>
+  <p class="footnote slide-reveal" data-reveal-section="problema">Lento, caro y opaco. El mid-market de LatAm no tiene alternativas reales.</p>
+  <div class="sources slide-reveal" data-reveal-section="problema">FSB/G20 Roadmap "Consolidated progress report for 2025" · IMF Working Paper WP/24/119 "Cross-Border Payments Integration in Latin America and the Caribbean"</div>
 </section>
 
 <!-- SLIDE 3: La solución -->
@@ -696,15 +705,15 @@
   <p class="subtitle" style="margin-top: 6px; margin-bottom: 0; font-size: 18px;">Crecimiento sostenido 13x en 2 años.</p>
   <div class="stats stats-traccion">
     <div class="stat">
-      <div class="number countup" data-target="73.3" data-prefix="$" data-suffix="M" data-decimals="1" data-delay="0">$73.3M</div>
+      <div class="number countup" data-target="73.3" data-prefix="$" data-suffix="M" data-decimals="1" data-delay="0">$0.0M</div>
       <div class="label">Volumen Q4 2025</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="690" data-prefix="$" data-suffix="K" data-decimals="0" data-delay="200">$690K</div>
+      <div class="number countup" data-target="690" data-prefix="$" data-suffix="K" data-decimals="0" data-delay="200">$0K</div>
       <div class="label">ARR actual</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="137" data-suffix="" data-decimals="0" data-delay="400">137</div>
+      <div class="number countup" data-target="137" data-suffix="" data-decimals="0" data-delay="400">0</div>
       <div class="label">Clientes activos</div>
     </div>
   </div>
@@ -719,15 +728,15 @@
   <h2>Una oportunidad masiva.</h2>
   <div class="stats">
     <div class="stat">
-      <div class="number countup" data-target="184" data-prefix="$" data-suffix="B" data-decimals="0" data-delay="0">$184B</div>
+      <div class="number countup" data-target="184" data-prefix="$" data-suffix="B" data-decimals="0" data-delay="0">$0B</div>
       <div class="label">Volumen en Chile — 39,200 empresas · 0.3% penetración</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="2.87" data-prefix="$" data-suffix="T" data-decimals="2" data-delay="300">$2.87T</div>
+      <div class="number countup" data-target="2.87" data-prefix="$" data-suffix="T" data-decimals="2" data-delay="300">$0.00T</div>
       <div class="label">Volumen en LatAm — 583,000 empresas · 0% penetración</div>
     </div>
   </div>
-  <p class="footnote">*Empresas de 25,000–100,000 UF de venta anuales. El mid-market hoy no tiene alternativas viables a los bancos.</p>
+  <p class="footnote">*Empresas de $1M–$4.4M USD de venta anuales. El mid-market hoy no tiene alternativas viables a los bancos.</p>
   <div class="sources">SME Policy Index: Latin America and the Caribbean 2024 (OECD/CAF/SELA) · World Bank WITS — Latin America &amp; Caribbean Trade Summary 2023</div>
 </section>
 
@@ -975,7 +984,7 @@ document.querySelectorAll('.stat, .card, .corridor, .step, .team-member, .gantt-
 });
 
 // Stagger animation for grid items
-document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track, .stats, .steps').forEach(container => {
+document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track, .stats:not(.stats-problema), .steps').forEach(container => {
   const items = container.children;
   Array.from(items).forEach((item, i) => {
     item.style.transitionDelay = (i * 0.1) + 's';
@@ -1024,61 +1033,128 @@ document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track,
   });
 })();
 
-/* ===== COUNT-UP ANIMATION ===== */
+/* ===== COUNT-UP + SEQUENTIAL REVEAL ===== */
 (function() {
-  function animateCountUp(el) {
-    if (el.dataset.animated) return;
-    el.dataset.animated = '1';
-    var target = parseFloat(el.dataset.target);
-    var decimals = parseInt(el.dataset.decimals) || 0;
-    var prefix = el.dataset.prefix || '';
-    var suffix = el.dataset.suffix || '';
-    var delay = parseInt(el.dataset.delay) || 0;
-    var duration = 1600;
+  var INITIAL_DELAY = 600;   /* ms before first stat appears */
+  var STAGGER = 3500;        /* ms between each stat appearing */
+  var COUNT_DURATION = 2400; /* ms for the number count-up animation */
 
-    setTimeout(function() {
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-      var start = 0;
-      var startTime = null;
-
-      function easeOutExpo(t) {
-        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-      }
-
-      function step(timestamp) {
-        if (!startTime) startTime = timestamp;
-        var progress = Math.min((timestamp - startTime) / duration, 1);
-        var easedProgress = easeOutExpo(progress);
-        var current = start + (target - start) * easedProgress;
-        el.textContent = prefix + current.toFixed(decimals) + suffix;
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        }
-      }
-      requestAnimationFrame(step);
-    }, delay);
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
   }
 
-  /* Set initial state for all countup elements */
-  document.querySelectorAll('.countup').forEach(function(el) {
+  function animateCountUp(numberEl) {
+    var target = parseFloat(numberEl.dataset.target);
+    var decimals = parseInt(numberEl.dataset.decimals) || 0;
+    var prefix = numberEl.dataset.prefix || '';
+    var suffix = numberEl.dataset.suffix || '';
+    var startTime = null;
+
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var p = Math.min((ts - startTime) / COUNT_DURATION, 1);
+      var v = easeOutExpo(p) * target;
+      numberEl.textContent = prefix + v.toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* Hide every NON-problema .stat and .slide-reveal on load */
+  var revealTransition = 'opacity 1s cubic-bezier(0.25,0.46,0.45,0.94), transform 1s cubic-bezier(0.25,0.46,0.45,0.94)';
+  document.querySelectorAll('.stats:not(.stats-problema) .stat').forEach(function(stat) {
+    stat.style.opacity = '0';
+    stat.style.transform = 'translateY(28px)';
+    stat.style.transition = revealTransition;
+  });
+  document.querySelectorAll('.slide-reveal:not([data-reveal-section="problema"])').forEach(function(el) {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = revealTransition;
   });
 
+  /* --- PROBLEMA: uses CSS class-based animation (keyframes) --- */
+  var problemaSection = document.getElementById('problema');
+  var problemaTriggered = false;
+  if (problemaSection) {
+    /* Collect all elements to animate in order */
+    var pAll = [];
+    var pEyebrow = problemaSection.querySelector('.problema-reveal.eyebrow');
+    var pH2 = problemaSection.querySelector('h2.problema-reveal');
+    var pStats = problemaSection.querySelectorAll('.stats-problema .stat');
+    var pFootnote = problemaSection.querySelector('.footnote.slide-reveal');
+    var pSources = problemaSection.querySelector('.sources.slide-reveal');
+
+    /* Build sequence: [element, delay_ms] */
+    var sequence = [
+      [pEyebrow, 0],
+      [pH2, 200],
+      [pStats[0], 700],
+      [pStats[1], 1700],
+      [pStats[2], 2700],
+      [pFootnote, 3000],
+      [pSources, 3200]
+    ];
+
+    /* Hide all initially with CSS class */
+    sequence.forEach(function(pair) {
+      if (pair[0]) pair[0].classList.add('problema-hidden');
+    });
+
+    var problemaObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting || problemaTriggered) return;
+        problemaTriggered = true;
+        sequence.forEach(function(pair) {
+          var el = pair[0], delay = pair[1];
+          if (!el) return;
+          setTimeout(function() {
+            el.classList.remove('problema-hidden');
+            el.classList.add('problema-animate');
+          }, delay);
+        });
+        problemaObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.15 });
+    problemaObserver.observe(problemaSection);
+  }
+
+  /* --- OTHER SLIDES: countUp observer (Tracción, Oportunidad) --- */
   var countObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        var els = entry.target.querySelectorAll('.countup');
-        els.forEach(function(el) { animateCountUp(el); });
-        countObserver.unobserve(entry.target);
-      }
+      if (!entry.isIntersecting) return;
+      var statsContainer = entry.target;
+      var stats = statsContainer.querySelectorAll('.stat');
+      var section = statsContainer.closest('section');
+      var reveals = section ? section.querySelectorAll('.slide-reveal') : [];
+
+      stats.forEach(function(stat) {
+        setTimeout(function() {
+          stat.style.opacity = '1';
+          stat.style.transform = 'translateY(0)';
+          var num = stat.querySelector('.countup');
+          if (num && !num.dataset.animated) {
+            num.dataset.animated = '1';
+            animateCountUp(num);
+          }
+        }, INITIAL_DELAY);
+      });
+
+      /* Reveal footnote/sources after countUp finishes */
+      var afterCountUp = INITIAL_DELAY + COUNT_DURATION + 400;
+      reveals.forEach(function(el, i) {
+        setTimeout(function() {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, afterCountUp + i * 200);
+      });
+
+      countObserver.unobserve(statsContainer);
     });
   }, { threshold: 0.3 });
 
-  document.querySelectorAll('.stats').forEach(function(stats) {
-    countObserver.observe(stats);
+  document.querySelectorAll('.stats:not(.stats-problema)').forEach(function(s) {
+    countObserver.observe(s);
   });
 })();
 </script>
