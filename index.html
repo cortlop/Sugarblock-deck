@@ -13,6 +13,7 @@
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  img.emoji { height: 1em; width: 1em; margin: 0 .05em 0 .1em; vertical-align: -0.1em; }
   .problema-hidden { opacity: 0 !important; transform: translateY(24px); }
   .problema-animate {
     animation: problemaFadeIn 0.9s cubic-bezier(0.25,0.46,0.45,0.94) forwards !important;
@@ -1158,5 +1159,7 @@ document.querySelectorAll('.card-grid, .corridor-grid, .team-grid, .gantt-track,
   });
 })();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script>twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });</script>
 </body>
 </html>
