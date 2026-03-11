@@ -358,11 +358,14 @@
     .phone-frame { display: none !important; }
 
     /* Steps — compact horizontal on mobile */
-    .steps { flex-direction: column; gap: 10px; align-items: center; margin-top: 20px; }
-    .step { flex: none; width: 100%; max-width: 300px; text-align: center; padding: 18px 16px; }
+    .steps { flex-direction: column; gap: 6px; align-items: center; margin-top: 16px; }
+    .step { flex: none; width: 100%; max-width: 300px; text-align: center; padding: 12px 16px; }
+    .step h3 { font-size: 16px !important; }
     .step h4 { font-size: 15px; }
     .step p { font-size: 12px; }
-    .step-arrow { transform: rotate(90deg); font-size: 20px !important; margin: -2px 0; }
+    .step .subtitle { margin-top: 4px !important; }
+    .step [data-i18n="step3_disclaimer"] { font-size: 9px !important; margin-top: 3px !important; }
+    .step-arrow { transform: rotate(90deg); font-size: 18px !important; margin: -4px 0; }
 
     /* Corridors: 2x4 grid fits one screen — only base 7 + intl = 8 */
     .corridor-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px !important; }
@@ -593,7 +596,7 @@ html {
   " id="splash-bar-wrap">
     <div id="splash-bar" style="
       width: 0%; height: 100%; background: rgba(255,255,255,0.5);
-      border-radius: 1px; transition: width 5s cubic-bezier(0.4, 0, 0, 1);
+      border-radius: 1px; transition: width 2.2s cubic-bezier(0.4, 0, 0, 1);
     "></div>
   </div>
 </div>
@@ -613,8 +616,8 @@ html {
 (function() {
   var lang = localStorage.getItem('sb-lang') || ((navigator.language || '').substring(0, 2) === 'en' ? 'en' : 'es');
   var phrasesMap = {
-    es: ['Dinero sin fronteras', 'Pagos globales', 'R\u00e1pido \u00b7 Simple \u00b7 Seguro', 'El futuro de los pagos', 'Cross-border payments', 'Cripto a fiat en minutos'],
-    en: ['Money without borders', 'Global payments', 'Fast \u00b7 Simple \u00b7 Secure', 'The future of payments', 'Cross-border payments', 'Crypto to fiat in minutes']
+    es: ['Pagos globales', 'R\u00e1pido \u00b7 Simple \u00b7 Seguro', 'Cross-border payments'],
+    en: ['Global payments', 'Fast \u00b7 Simple \u00b7 Secure', 'Cross-border payments']
   };
   var phrases = phrasesMap[lang] || phrasesMap.es;
   var container = document.getElementById('splash-words');
@@ -639,15 +642,15 @@ html {
       document.getElementById('splash-words').style.transform = 'translateY(0)';
       document.getElementById('splash-bar-wrap').style.opacity = '1';
       document.getElementById('splash-bar-wrap').style.transform = 'translateY(0)';
-    }, 300);
-    
+    }, 150);
+
     // Start progress bar
     setTimeout(function() {
       document.getElementById('splash-bar').style.width = '100%';
-    }, 400);
+    }, 200);
 
     // Show first word
-    setTimeout(function() { words[0].classList.add('in'); }, 500);
+    setTimeout(function() { words[0].classList.add('in'); }, 250);
 
     // Rotate words
     var iv = setInterval(function() {
@@ -658,8 +661,8 @@ html {
       setTimeout(function() {
         words[prev].classList.remove('out');
         words[idx].classList.add('in');
-      }, 150);
-    }, 1400);
+      }, 100);
+    }, 600);
 
     // Fade out splash smoothly
     setTimeout(function() {
@@ -667,8 +670,8 @@ html {
       var s = document.getElementById('splash-screen');
       s.style.opacity = '0';
       s.style.visibility = 'hidden';
-      setTimeout(function() { s.remove(); }, 1200);
-    }, 5500);
+      setTimeout(function() { s.remove(); }, 800);
+    }, 2500);
   });
 })();
 </script>
@@ -757,29 +760,30 @@ html {
 <section class="slide slide-light">
   <div style="text-align: center;">
     <div class="eyebrow" data-i18n="steps_eyebrow">Cómo funciona</div>
-    <h2 data-i18n="steps_title">3 pasos. Minutos.</h2>
+    <h2 data-i18n="steps_title">3 pasos. Listo en minutos.</h2>
     <div class="steps">
       <div class="step">
         <div class="step-number">1</div>
-        <h3 data-i18n="step1_title">Fondeo CLP</h3>
-        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step1_desc">Deposita pesos chilenos</p>
+        <h3 data-i18n="step1_title">Fondeo en pesos</h3>
+        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step1_desc">El cliente deposita desde su banco local.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
         <div class="step-number">2</div>
-        <h3>CLP → USDT</h3>
-        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step2_desc">Conversión instantánea</p>
+        <h3 data-i18n="step2_title">Confirma y envía</h3>
+        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step2_desc">Destino, monto y FX rate en tiempo real.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
         <div class="step-number">3</div>
-        <h3 data-i18n="step3_title">Pago local</h3>
-        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step3_desc">Tu proveedor recibe en minutos</p>
+        <h3 data-i18n="step3_title">El proveedor cobra</h3>
+        <p class="subtitle" style="font-size: 15px; margin-top: 8px;" data-i18n="step3_desc">Pago directo en cuenta local. Mismo día.</p>
+        <p style="font-size: 11px; color: #a1a1a6; margin-top: 6px; line-height: 1.3;" data-i18n="step3_disclaimer">Mismo día en la mayoría de destinos. Sujeto a horarios de corte y zona horaria.</p>
       </div>
     </div>
-    <div style="text-align: center; margin: 40px auto 0;">
+    <div style="text-align: center; margin: 32px auto 0;">
       <div style="display: inline-block; background: var(--accent); color: white; border-radius: 100px; padding: 16px 36px; font-size: clamp(16px, 2vw, 20px); font-weight: 600; box-shadow: 0 8px 32px rgba(108,60,224,0.3);" data-i18n="steps_result">
-        Resultado: pagas hasta <span style="font-size: 1.3em; font-weight: 800;">70%</span> menos que con bancos.
+        Hasta <span style="font-size: 1.3em; font-weight: 800;">70%</span> más barato que bancos tradicionales.
       </div>
     </div>
   </div>
@@ -819,7 +823,7 @@ html {
 </section>
 
 <!-- SLIDE 6: Precios (Chart.js interactive) -->
-<section class="slide slide-light">
+<section class="slide slide-light" style="padding-top: 140px;">
   <div class="eyebrow">Pricing</div>
   <h2 data-i18n="pricing_title">Precios transparentes.</h2>
   <p class="subtitle" data-i18n="pricing_subtitle">Sin costos ocultos. Best case por corredor.</p>
@@ -1812,13 +1816,15 @@ function animateCountUp(numberEl) {
       solucion_card4_desc: 'Compliance, reporting y gestión integrados',
       // Steps
       steps_eyebrow: 'Cómo funciona',
-      steps_title: '3 pasos. Minutos.',
-      step1_title: 'Fondeo CLP',
-      step1_desc: 'Deposita pesos chilenos',
-      step2_desc: 'Conversión instantánea',
-      step3_title: 'Pago local',
-      step3_desc: 'Tu proveedor recibe en minutos',
-      steps_result: 'Resultado: pagas hasta <span style="font-size: 1.3em; font-weight: 800;">70%</span> menos que con bancos.',
+      steps_title: '3 pasos. Listo en minutos.',
+      step1_title: 'Fondeo en pesos',
+      step1_desc: 'El cliente deposita desde su banco local.',
+      step2_title: 'Confirma y envía',
+      step2_desc: 'Destino, monto y FX rate en tiempo real.',
+      step3_title: 'El proveedor cobra',
+      step3_desc: 'Pago directo en cuenta local. Mismo día.',
+      step3_disclaimer: 'Mismo día en la mayoría de destinos. Sujeto a horarios de corte y zona horaria.',
+      steps_result: 'Hasta <span style="font-size: 1.3em; font-weight: 800;">70%</span> más barato que bancos tradicionales.',
       // Cobertura
       cobertura_eyebrow: 'Cobertura',
       cobertura_title: '15+ corredores activos.',
@@ -1911,13 +1917,15 @@ function animateCountUp(numberEl) {
       solucion_card4_desc: 'Integrated compliance, reporting & management',
       // Steps
       steps_eyebrow: 'How it works',
-      steps_title: '3 steps. Minutes.',
-      step1_title: 'Fund CLP',
-      step1_desc: 'Deposit Chilean pesos',
-      step2_desc: 'Instant conversion',
-      step3_title: 'Local payout',
-      step3_desc: 'Your supplier receives funds in minutes',
-      steps_result: 'Result: pay up to <span style="font-size: 1.3em; font-weight: 800;">70%</span> less than with banks.',
+      steps_title: '3 steps. Done in minutes.',
+      step1_title: 'Fund in local currency',
+      step1_desc: 'The client deposits from their local bank.',
+      step2_title: 'Confirm and send',
+      step2_desc: 'Destination, amount and FX rate in real time.',
+      step3_title: 'Supplier gets paid',
+      step3_desc: 'Direct to local account. Same day.',
+      step3_disclaimer: 'Same day in most destinations. Subject to cut-off times and time zones.',
+      steps_result: 'Up to <span style="font-size: 1.3em; font-weight: 800;">70%</span> cheaper than traditional banks.',
       // Cobertura
       cobertura_eyebrow: 'Coverage',
       cobertura_title: '15+ active corridors.',
