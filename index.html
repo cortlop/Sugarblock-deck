@@ -1004,16 +1004,16 @@ function initPricingChart() {
   window._pricingChart = new Chart(document.getElementById('pricingChart'), {
     type: 'bar',
     data: {
-      labels: ['USA', 'Chile', 'Intl. SWIFT', 'México', 'Europa', 'Brasil', 'India', 'Colombia'],
+      labels: ['USA', 'Chile', 'China', 'Intl. SWIFT', 'México', 'Europa', 'Brasil', 'Colombia'],
       datasets: [{
         label: 'Sugarblock',
-        data: [0.33, 0.35, 0.35, 0.45, 0.45, 0.60, 0.60, 0.65],
+        data: [0.33, 0.35, 0.35, 0.35, 0.45, 0.45, 0.60, 0.65],
         backgroundColor: '#6c3ce0',
         borderRadius: 6,
         borderSkipped: false,
       }, {
         label: (window.SBi18n ? window.SBi18n.getTranslations()[window.SBi18n.getLang()].chart_bank_label : null) || 'Banco tradicional',
-        data: [1.2, 1.2, 1.5, 1.4, 1.3, 1.5, 1.8, 1.6],
+        data: [1.2, 1.2, 1.8, 1.5, 1.4, 1.3, 1.5, 1.6],
         backgroundColor: 'rgba(180, 180, 180, 0.4)',
         borderRadius: 6,
         borderSkipped: false,
