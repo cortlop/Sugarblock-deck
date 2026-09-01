@@ -838,19 +838,23 @@ html {
 <section class="slide slide-traccion" id="traccion">
   <div class="eyebrow" style="margin-bottom: 8px;" data-i18n="traccion_eyebrow">Tracción</div>
   <h2 style="margin-bottom: 0;" data-i18n="traccion_title">Tracción real.</h2>
-  <p class="subtitle" style="margin-top: 6px; margin-bottom: 0; font-size: 18px;" data-i18n="traccion_subtitle">Crecimiento sostenido 13x en 2 años.</p>
+  <p class="subtitle" style="margin-top: 6px; margin-bottom: 0; font-size: 18px;" data-i18n="traccion_subtitle">Crecimiento 15x en poco más de dos años.</p>
   <div class="stats stats-traccion">
     <div class="stat">
-      <div class="number countup" data-target="73.3" data-prefix="$" data-suffix="M" data-decimals="1" data-delay="0">$0.0M</div>
-      <div class="label" data-i18n="traccion_label1">Volumen Q4 2025</div>
+      <div class="number countup" data-target="82.0" data-prefix="$" data-suffix="M" data-decimals="1" data-delay="0">$0.0M</div>
+      <div class="label" data-i18n="traccion_label1">Volumen Q2 2026</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="690" data-prefix="$" data-suffix="K" data-decimals="0" data-delay="200">$0K</div>
+      <div class="number countup" data-target="533" data-prefix="$" data-suffix="M" data-decimals="0" data-delay="150">$0M</div>
+      <div class="label" data-i18n="traccion_label4">Volumen acumulado</div>
+    </div>
+    <div class="stat">
+      <div class="number countup" data-target="690" data-prefix="$" data-suffix="K" data-decimals="0" data-delay="300">$0K</div>
       <div class="label" data-i18n="traccion_label2">ARR actual</div>
     </div>
     <div class="stat">
-      <div class="number countup" data-target="137" data-suffix="" data-decimals="0" data-delay="400">0</div>
-      <div class="label" data-i18n="traccion_label3">Clientes activos</div>
+      <div class="number countup" data-target="143" data-suffix="" data-decimals="0" data-delay="450">0</div>
+      <div class="label" data-i18n="traccion_label3">Clientes</div>
     </div>
   </div>
   <div style="width: 100%; flex: 1; min-height: 0; margin-top: 16px;">
@@ -1062,10 +1066,10 @@ function initVolumeChart() {
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Q1 2024','Q2 2024','Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025'],
+      labels: ['Q1 2024','Q2 2024','Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025','Q1 2026','Q2 2026'],
       datasets: [{
         label: 'Volumen ($M)',
-        data: [5.6, 9.5, 16, 25.5, 35, 44, 57, 73.3],
+        data: [5.5, 31, 38.2, 44.8, 52.3, 67.6, 60.2, 74.6, 76.8, 82],
         fill: true,
         backgroundColor: gradient,
         borderColor: '#6c3ce0',
@@ -1098,13 +1102,13 @@ function initVolumeChart() {
       scales: {
         y: {
           beginAtZero: true,
-          max: 80,
+          max: 100,
           grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: { callback: v => '$' + v + 'M', stepSize: 20, font: { size: 11 } }
+          ticks: { callback: v => '$' + v + 'M', stepSize: 25, font: { size: 11 } }
         },
         x: {
           grid: { display: false },
-          ticks: { font: { size: 11 } }
+          ticks: { autoSkip: true, maxRotation: 0, font: { size: 11 } }
         }
       }
     }
@@ -1850,10 +1854,11 @@ function animateCountUp(numberEl) {
       // Tracción
       traccion_eyebrow: 'Tracción',
       traccion_title: 'Tracción real.',
-      traccion_subtitle: 'Crecimiento sostenido 13x en 2 años.',
-      traccion_label1: 'Volumen Q4 2025',
+      traccion_subtitle: 'Crecimiento 15x en poco más de dos años.',
+      traccion_label1: 'Volumen Q2 2026',
       traccion_label2: 'ARR actual',
-      traccion_label3: 'Clientes activos',
+      traccion_label3: 'Clientes',
+      traccion_label4: 'Volumen acumulado',
       // Mercado
       mercado_eyebrow: 'Oportunidad',
       mercado_title: 'Una oportunidad masiva.',
@@ -1957,10 +1962,11 @@ function animateCountUp(numberEl) {
       // Tracción
       traccion_eyebrow: 'Traction',
       traccion_title: 'Real traction.',
-      traccion_subtitle: 'Sustained 13x growth in 2 years.',
-      traccion_label1: 'Volume Q4 2025',
+      traccion_subtitle: '15x growth in just over two years.',
+      traccion_label1: 'Q2 2026 volume',
       traccion_label2: 'Current ARR',
-      traccion_label3: 'Active customers',
+      traccion_label3: 'Clients',
+      traccion_label4: 'Cumulative volume',
       // Mercado
       mercado_eyebrow: 'Opportunity',
       mercado_title: 'A massive opportunity.',
