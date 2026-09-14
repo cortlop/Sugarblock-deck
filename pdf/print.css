@@ -1,0 +1,259 @@
+/* ===========================================================================
+   Sugarblock deck — print overrides.
+   Layered on top of index.html's own styles by pdf/build-pdf.mjs.
+   Turns the scrolling, animated site into fixed 1280x720 (16:9) pages.
+   =========================================================================== */
+
+@page { size: 1280px 720px; margin: 0; }
+
+html { scroll-snap-type: none; scroll-behavior: auto; }
+
+body {
+  width: 1280px;
+  margin: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Nothing animates, reveals, or hovers on paper. */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+/* GSAP normally drives these from opacity:0 — on paper they are simply there. */
+.slide-reveal,
+.problema-reveal,
+.problema-hidden,
+.stat,
+.card,
+.corridor,
+.step,
+.team-member,
+.gantt-bar {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* Screen-only chrome. */
+#splash-screen,
+nav,
+.lang-toggle,
+#globeCanvas {
+  display: none !important;
+}
+
+/* --- Pages ----------------------------------------------------------------
+   Every slide is exactly one 16:9 page. `overflow: hidden` on the original
+   .slide rule would clip anything that misfits, so the build script checks
+   each page's scroll height and reports overflow instead of hiding it.        */
+.slide {
+  width: 1280px !important;
+  height: 720px !important;
+  min-height: 720px !important;
+  max-height: 720px !important;
+  padding: 72px 80px !important;
+  margin: 0 !important;
+  overflow: hidden;
+  position: relative;
+  break-after: page;
+  break-inside: avoid;
+  page-break-after: always;
+  page-break-inside: avoid;
+  scroll-snap-align: none;
+}
+.slide:last-of-type { break-after: auto; page-break-after: auto; }
+
+/* Backdrop filters do not rasterise in print — make the glass solid. */
+.corridor,
+.slide#solucion .card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--white) !important;
+}
+
+/* --- Page furniture ------------------------------------------------------- */
+.pdf-footer {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b3a7c4;
+  font-weight: 500;
+}
+.slide-dark .pdf-footer { color: rgba(255, 255, 255, 0.38); }
+.pdf-footer .pdf-page-no { font-variant-numeric: tabular-nums; }
+
+/* --- Cover ---------------------------------------------------------------- */
+#hero { justify-content: center; }
+#hero .hero-content { max-width: 760px; }
+#hero h1 { font-size: 70px !important; }
+.pdf-globe {
+  position: absolute;
+  top: 50%;
+  right: -78px;
+  transform: translateY(-50%);
+  width: 560px;
+  height: 560px;
+  z-index: 1;
+  pointer-events: none;
+}
+.pdf-cover-meta {
+  position: absolute;
+  left: 80px;
+  bottom: 64px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray);
+  font-weight: 600;
+  z-index: 2;
+}
+
+/* --- Coverage: show every corridor, five to a row ------------------------- */
+.corridor-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 12px !important; }
+.corridor-md, .corridor-xl, .corridor-xxl { display: block !important; }
+.corridor-intl { background: var(--accent-light) !important; border-color: #d9c8f2 !important; }
+
+/* --- Team: two even rows of five ------------------------------------------ */
+.team-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 22px 18px !important; margin-top: 30px !important; }
+.team-avatar { width: 84px !important; height: 84px !important; margin-bottom: 12px !important; }
+.team-desc { font-size: 10px !important; line-height: 1.35; max-width: 185px; }
+
+/* --- Tables (pricing comparison + annexes) -------------------------------- */
+.pdf-table-wrap { width: 100%; margin-top: 22px; }
+
+table.pdf-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  background: var(--white);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02), 0 12px 24px rgba(0, 0, 0, 0.04);
+}
+
+table.pdf-table thead th {
+  background: var(--black);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 13px 18px;
+  white-space: nowrap;
+}
+
+table.pdf-table tbody td {
+  padding: 11px 18px;
+  border-top: 1px solid var(--border);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+table.pdf-table tbody tr:nth-child(even) td { background: #faf8fd; }
+table.pdf-table tbody tr:first-child td { border-top: none; }
+
+table.pdf-table .col-name { font-weight: 600; color: var(--black); white-space: nowrap; }
+table.pdf-table .col-rail { font-size: 12px; color: var(--gray); white-space: nowrap; }
+table.pdf-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.pdf-table thead th.num { text-align: right; }
+
+table.pdf-table .v-sb { font-weight: 700; color: var(--accent); }
+table.pdf-table .v-bank { color: var(--gray); }
+table.pdf-table .v-save { font-weight: 700; color: var(--black); }
+
+/* Inline proportion bars keep the chart's at-a-glance comparison. */
+.cmp-bars { display: flex; flex-direction: column; gap: 5px; min-width: 190px; }
+.cmp-bar { height: 9px; border-radius: 5px; background: var(--accent); min-width: 3px; }
+.cmp-bar.is-bank { background: #d8d2e4; }
+
+table.pdf-table tfoot td {
+  background: var(--accent-light);
+  border-top: 2px solid #d9c8f2;
+  font-weight: 700;
+  color: var(--black);
+  padding: 12px 18px;
+}
+
+.pdf-table-note {
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--gray);
+}
+
+/* --- Annex pages ---------------------------------------------------------- */
+.slide.annex { justify-content: flex-start; padding-top: 68px !important; }
+.annex-tag {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.slide.annex h2 { font-size: 40px !important; letter-spacing: -1.2px; }
+.slide.annex .subtitle { font-size: 17px !important; margin-top: 10px !important; max-width: 780px; }
+.annex .pdf-table-wrap { margin-top: 20px; }
+.annex table.pdf-table { font-size: 13px; }
+.annex table.pdf-table tbody td { padding: 8px 16px; }
+.annex table.pdf-table thead th { padding: 11px 16px; }
+
+/* Annex divider page */
+.slide.annex-divider { align-items: flex-start; justify-content: center; }
+.slide.annex-divider h2 { font-size: 56px !important; }
+
+/* --- Traction: the line chart is redrawn as inline SVG -------------------- */
+.pdf-linechart { width: 100%; height: 100%; display: block; }
+
+/* Pricing page: the table needs the room the chart used to have. */
+.slide--pricing { padding-top: 60px !important; padding-bottom: 56px !important; }
+.slide--pricing h2 { font-size: 44px !important; }
+.slide--pricing .subtitle { font-size: 18px !important; margin-top: 10px !important; }
+.slide--pricing .pdf-table-wrap { margin-top: 18px; }
+.slide--pricing table.pdf-table { font-size: 13px; }
+.slide--pricing table.pdf-table tbody td { padding: 8px 18px; }
+.slide--pricing .footnote { margin-top: 14px !important; max-width: 100%; }
+
+/* Annex B lists the corridors in two columns. */
+.pdf-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+
+/* Annex tables read better optically centred than pinned to the top. */
+.slide.annex { justify-content: center; padding-top: 72px !important; }
+
+/* Annex divider: brand mark above the title. */
+.slide.annex-divider { padding-left: 80px !important; }
+.annex-mark { height: 40px !important; width: auto; color: #fff; margin-bottom: 28px; }
+.slide.annex-divider .subtitle { max-width: 640px; }
+
+/* Vision slide: the Gantt plus its legend and footnote need the extra room. */
+.slide:has(> .gantt-container) { padding-top: 56px !important; padding-bottom: 56px !important; }
+.gantt-container { margin-top: 20px !important; }
+.gantt-legend { margin-top: 20px !important; }
+
+/* Team: nine members lay out 5 + 4, with the short row centred. */
+.team-grid {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px 18px !important;
+}
+.team-member { width: 206px; }
+
+/* Keep the vision subtitle on one line — two lines push the footnote off the page. */
+.slide:has(> .gantt-container) .subtitle { max-width: 820px !important; }

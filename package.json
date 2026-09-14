@@ -1,0 +1,17 @@
+{
+  "name": "sugarblock-deck",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sugarblock sales deck (sales.sugarblock.io) and its PDF export.",
+  "type": "module",
+  "scripts": {
+    "pdf": "node pdf/build-pdf.mjs --all",
+    "pdf:es": "node pdf/build-pdf.mjs --lang es",
+    "pdf:en": "node pdf/build-pdf.mjs --lang en",
+    "pdf:proof": "node pdf/build-pdf.mjs --all --png",
+    "fonts": "node pdf/tools/fetch-fonts.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}
