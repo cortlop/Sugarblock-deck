@@ -10,6 +10,10 @@ npm run pdf:es       # Spanish only
 npm run pdf:proof    # also writes dist/proof-<lang>/NN.png for eyeballing pages
 ```
 
+Proof PNGs are screenshots of the live page, not of the PDF. They agree on
+layout but not on everything Chrome's print pipeline does — check the PDF
+itself before calling a visual change done.
+
 ## What the build does
 
 `index.html` stays the single source of truth. The script opens it in Chromium
@@ -25,6 +29,15 @@ and, before printing:
   pricing chart is re-rendered as a comparative table; the traction chart as a
   static SVG line chart drawn from the same numbers. Edit a rate or a quarter in
   `index.html` and the tables follow — nothing is duplicated here.
+- **drops every shadow.** Chrome's print pipeline does not blur box-shadows: the
+  deck's soft card shadows come out as hard dark slabs and its purple glows as
+  halos, which makes every card, bar and pill look selected. A hairline border
+  does the separating instead. This also cut the file from 2.1 MB to 1.3 MB,
+  since those shadows were being rasterised.
+- **swaps the cover's WebGL globe** for `pdf/globe.svg`, which is the same
+  Natural Earth 110m dataset the site fetches, projected orthographically with
+  the same Santiago-out corridors. Regenerate it with `npm run globe` (needs the
+  dev dependencies) — only to change the orientation or the corridor list.
 
 Corridor rails in the pricing table are read out of the deck's own coverage
 grid, so they stay in step with it in both languages.

@@ -123,7 +123,7 @@ const COPY = {
 /* --------------------------------------------------------------------------
    Page-side transform. Runs inside Chromium with the captured chart configs.
    -------------------------------------------------------------------------- */
-function transform({ charts, copy, lang }) {
+function transform({ charts, copy, lang, globeSvg }) {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const el = (tag, cls, html) => {
@@ -149,96 +149,12 @@ function transform({ charts, copy, lang }) {
     n.textContent = `${n.dataset.prefix || ''}${nf(target, decimals)}${n.dataset.suffix || ''}`;
   });
 
-  /* -- cover: static stand-in for the WebGL globe -------------------------- */
+  /* -- cover: the WebGL globe, pre-projected ------------------------------ */
   const hero = $('#hero');
   if (hero) {
-    const R = 250;
-    const CX = 310;
-    const CY = 310;
-    const lat0 = -5;
-    const lon0 = -62;
-    const rad = (d) => (d * Math.PI) / 180;
-    const project = (lat, lon) => {
-      const [p, l, p0, dl] = [rad(lat), rad(lon), rad(lat0), rad(lon - lon0)];
-      const cosc = Math.sin(p0) * Math.sin(p) + Math.cos(p0) * Math.cos(p) * Math.cos(dl);
-      return {
-        x: CX + R * Math.cos(p) * Math.sin(dl),
-        y: CY - R * (Math.cos(p0) * Math.sin(p) - Math.sin(p0) * Math.cos(p) * Math.cos(dl)),
-        visible: cosc >= 0,
-      };
-    };
-    const polyline = (pts, attrs) =>
-      pts.length < 2 ? '' : `<path d="M${pts.map((q) => `${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join('L')}" ${attrs}/>`;
-
-    // Meridians and parallels, matching the site's wireframe sphere.
-    let wire = '';
-    const wireAttrs = 'fill="none" stroke="#592e83" stroke-width="1" stroke-opacity="0.16"';
-    for (let lon = -180; lon < 180; lon += 20) {
-      const pts = [];
-      for (let lat = -90; lat <= 90; lat += 4) {
-        const q = project(lat, lon);
-        if (q.visible) pts.push(q);
-        else if (pts.length) { wire += polyline(pts, wireAttrs); pts.length = 0; }
-      }
-      wire += polyline(pts, wireAttrs);
-    }
-    for (let lat = -80; lat <= 80; lat += 20) {
-      const pts = [];
-      for (let lon = -180; lon <= 180; lon += 4) {
-        const q = project(lat, lon);
-        if (q.visible) pts.push(q);
-        else if (pts.length) { wire += polyline(pts, wireAttrs); pts.length = 0; }
-      }
-      wire += polyline(pts, wireAttrs);
-    }
-
-    // Corridor arcs out of Santiago — the same destinations the site animates.
-    const origin = { lat: -33.45, lon: -70.67 };
-    const dests = [
-      { lat: 40.71, lon: -74.01 }, { lat: 19.43, lon: -99.13 }, { lat: -23.55, lon: -46.63 },
-      { lat: 4.71, lon: -74.07 }, { lat: 19.08, lon: 72.88 }, { lat: 31.23, lon: 121.47 },
-      { lat: 51.51, lon: -0.13 }, { lat: 1.35, lon: 103.82 }, { lat: -34.6, lon: -58.38 },
-      { lat: -12.05, lon: -77.04 },
-    ];
-    const o = project(origin.lat, origin.lon);
-    let arcs = '';
-    let dots = '';
-    dests.forEach((d) => {
-      const q = project(d.lat, d.lon);
-      if (!q.visible) return;
-      // Bulge the control point away from the globe centre, as the 3D arcs do.
-      const mx = (o.x + q.x) / 2;
-      const my = (o.y + q.y) / 2;
-      const len = Math.hypot(mx - CX, my - CY) || 1;
-      const lift = 1 + Math.min(0.42, Math.hypot(q.x - o.x, q.y - o.y) / (R * 3.2));
-      const cx = CX + ((mx - CX) / len) * len * lift;
-      const cy = CY + ((my - CY) / len) * len * lift;
-      arcs += `<path d="M${o.x.toFixed(1)} ${o.y.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${q.x.toFixed(1)} ${q.y.toFixed(1)}" fill="none" stroke="url(#sbArc)" stroke-width="1.6" stroke-linecap="round"/>`;
-      dots += `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="3.2" fill="#9984d4"/>`;
-    });
-
     const globe = el('div');
-    globe.innerHTML = `
-<svg class="pdf-globe" viewBox="0 0 620 620" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <defs>
-    <radialGradient id="sbGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="55%" stop-color="#592e83" stop-opacity="0.07"/>
-      <stop offset="100%" stop-color="#592e83" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="sbArc" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#592e83" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#be2eff" stop-opacity="0.35"/>
-    </linearGradient>
-  </defs>
-  <circle cx="${CX}" cy="${CY}" r="${R + 46}" fill="url(#sbGlow)"/>
-  <circle cx="${CX}" cy="${CY}" r="${R}" fill="#faf8fd" stroke="#592e83" stroke-opacity="0.18" stroke-width="1"/>
-  ${wire}
-  ${arcs}
-  ${dots}
-  <circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="9" fill="#592e83" fill-opacity="0.18"/>
-  <circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="4.2" fill="#592e83"/>
-</svg>`;
-    hero.insertBefore(globe.firstElementChild, hero.firstChild);
+    globe.innerHTML = globeSvg; // pdf/globe.svg, built by pdf/tools/build-globe.mjs
+    if (globe.firstElementChild) hero.insertBefore(globe.firstElementChild, hero.firstChild);
     hero.appendChild(el('div', 'pdf-cover-meta', copy.coverMeta));
   }
 
@@ -602,7 +518,12 @@ async function build(browser, lang) {
     }));
   }, lang);
 
-  const report = await page.evaluate(transform, { charts, copy, lang });
+  const globePath = path.join(ROOT, 'pdf', 'globe.svg');
+  if (!fs.existsSync(globePath)) {
+    throw new Error('pdf/globe.svg is missing — run: node pdf/tools/build-globe.mjs');
+  }
+  const globeSvg = fs.readFileSync(globePath, 'utf8');
+  const report = await page.evaluate(transform, { charts, copy, lang, globeSvg });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(250);
 
